@@ -1,0 +1,36 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <JetCodeStyleSettings>
+      <option name="PACKAGES_TO_USE_STAR_IMPORTS">
+        <value>
+          <package name="java.util" alias="false" withSubpackages="false" />
+          <package name="kotlinx.android.synthetic" alias="false" withSubpackages="true" />
+          <package name="io.ktor" alias="false" withSubpackages="true" />
+        </value>
+      </option>
+      <option name="PACKAGES_IMPORT_LAYOUT">
+        <value>
+          <package name="" alias="false" withSubpackages="true" />
+          <package name="java" alias="false" withSubpackages="true" />
+          <package name="javax" alias="false" withSubpackages="true" />
+          <package name="kotlin" alias="false" withSubpackages="true" />
+          <package name="" alias="true" withSubpackages="true" />
+        </value>
+      </option>
+    </JetCodeStyleSettings>
+    <ScalaCodeStyleSettings>
+      <option name="INDENT_FIRST_PARAMETER" value="false" />
+      <option name="INDENT_FIRST_PARAMETER_CLAUSE" value="true" />
+      <option name="SCALAFMT_CONFIG_PATH" value="$USER_HOME$/ydx/telepony/infra-common-resources/scalastyle_config.xml" />
+      <option name="INDENT_BRACED_FUNCTION_ARGS" value="false" />
+    </ScalaCodeStyleSettings>
+    <codeStyleSettings language="Haskell">
+      <indentOptions>
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="Scala">
+      <option name="CALL_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
+    </codeStyleSettings>
+  </code_scheme>
+</component>

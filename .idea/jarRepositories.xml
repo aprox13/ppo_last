@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteRepositoriesConfiguration">
+    <remote-repository>
+      <option name="id" value="QA Snapshots Artifactory" />
+      <option name="name" value="QA Snapshots Artifactory" />
+      <option name="url" value="http://artifactory.yandex.net/artifactory/yandex_qa_snapshots" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory-springio" />
+      <option name="name" value="Artifactory Spring Plugins repository" />
+      <option name="url" value="http://artifactory.yandex.net/artifactory/springio/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="QA Releases Artifactory" />
+      <option name="name" value="QA Releases Artifactory" />
+      <option name="url" value="http://artifactory.yandex.net/artifactory/yandex_qa_releases" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory-hortonworks" />
+      <option name="name" value="Artifactory Hortonworks repository" />
+      <option name="url" value="http://artifactory.yandex.net/artifactory/hortonworks/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Maven Central repository" />
+      <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory-jcenter" />
+      <option name="name" value="Artifactory Jcenter repository" />
+      <option name="url" value="http://artifactory.yandex.net/jcenter/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="osssonatype" />
+      <option name="name" value="OSS Sonatype" />
+      <option name="url" value="https://repo1.maven.org/maven2/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory" />
+      <option name="name" value="Vertis proxying repository" />
+      <option name="url" value="http://artifactory.yandex.net/vertis" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="Public Artifactory" />
+      <option name="name" value="Public repository" />
+      <option name="url" value="http://artifactory.yandex.net/public" />
+    </remote-repository>
+  </component>
+</project>
