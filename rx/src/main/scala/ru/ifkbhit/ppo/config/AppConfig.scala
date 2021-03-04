@@ -9,7 +9,7 @@ case class AppConfig(
   mongoConfig: MongoConfig,
   schedulerConfig: SchedulerConfig,
   mongoCollections: MongoCollections,
-  currencyApiUrl: String
+  currenciesConfig: CurrenciesConfig
 )
 
 object AppConfig extends ConfigBuilder[AppConfig] {
@@ -20,6 +20,6 @@ object AppConfig extends ConfigBuilder[AppConfig] {
       mongoConfig = MongoConfig(cfg"mongo"),
       schedulerConfig = SchedulerConfig(cfg"scheduler"),
       mongoCollections = MongoCollections(cfg"mongo-collections"),
-      currencyApiUrl = str"currencies.api.url"
+      currenciesConfig = CurrenciesConfig(cfg"currencies")
     )
 }

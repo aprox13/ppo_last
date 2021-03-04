@@ -11,6 +11,8 @@ import ru.ifkbhit.ppo.service.currency.{Conversion, CurrencyService}
 import rx.lang.scala.Observable
 import rx.lang.scala.schedulers.ImmediateScheduler
 
+import scala.concurrent.duration.FiniteDuration
+
 trait CachedCurrencyService
   extends CurrencyService
     with Logging {
@@ -22,15 +24,16 @@ trait CachedCurrencyService
 
   private val data: AtomicReference[Map[Currency, Conversion]] = new AtomicReference()
 
-  protected def delayMinutes: Int
+  //noinspection MutatorLikeMethodIsParameterless
+  protected def updateEvery: FiniteDuration
 
   private def init(): Unit = {
-    update() // make it in current thread
+    update()
 
     worker.scheduleWithFixedDelay(() => update(),
-      delayMinutes,
-      delayMinutes,
-      TimeUnit.MINUTES
+      updateEvery.toMillis,
+      updateEvery.toMillis,
+      TimeUnit.MILLISECONDS
     )
   }
 

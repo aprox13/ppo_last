@@ -126,8 +126,6 @@ object MainHandler {
   private val ProductsRoute: Regex = "/products(/)?".r
   private val UtilsDropRoute: Regex = "/utils/drop/(\\w+)(/)?".r
 
-
-
   private implicit val UserFromBytes: BodyConverter[ByteBuf, User] =
     ByteToStringConverter.thenParse(_.parseJson.convertTo[User])
 

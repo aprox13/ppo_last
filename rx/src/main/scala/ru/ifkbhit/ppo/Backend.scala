@@ -15,6 +15,7 @@ import rx.lang.scala.Scheduler
 import rx.lang.scala.schedulers.ExecutionContextScheduler
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.FiniteDuration
 
 case class Backend(
   scheduler: Scheduler,
@@ -47,8 +48,8 @@ object BackendBuilder {
       new MongoDbService[StoredProduct](mongoDb, appConfig.mongoCollections.product)
 
     val currencyService: CurrencyService =
-      new LiveCurrencyService(appConfig.currencyApiUrl, HttpClients.createDefault()) with CachedCurrencyService {
-        override protected def delayMinutes: Int = 1
+      new LiveCurrencyService(appConfig.currenciesConfig.apiUrl, HttpClients.createDefault()) with CachedCurrencyService {
+        override protected def updateEvery: FiniteDuration = appConfig.currenciesConfig.updateEvery
       }
 
     val productService: ProductService =
