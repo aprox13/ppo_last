@@ -7,7 +7,7 @@
     <groupId>ru.ifkbhit.ppo</groupId>
     <artifactId>ppo_last</artifactId>
     <packaging>pom</packaging>
-    <version>${project.version}</version>
+    <version>1.0</version>
     <modules>
         <module>akka</module>
         <module>common</module>
