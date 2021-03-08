@@ -1,33 +1,32 @@
 package ru.ifkbhit.ppo.akka.manager.impl
 
-import java.io.InputStream
-
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import ru.ifkbhit.ppo.akka.config.EnginesConfig
+import ru.ifkbhit.ppo.akka.http.HttpClient
 import ru.ifkbhit.ppo.akka.manager.SearchManager
 import ru.ifkbhit.ppo.akka.model.SearchResponse
-import ru.ifkbhit.ppo.common.{Logging}
+import ru.ifkbhit.ppo.common.Logging
 import ru.ifkbhit.ppo.common.model.response.Response
 
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.ExecutionContext
 
-class SearchManagerImpl(enginesConfig: EnginesConfig) extends SearchManager with Logging {
-  override def searchFrom(engineName: String, request: String): Response[SearchResponse] = {
+class SearchManagerImpl(
+  enginesConfig: EnginesConfig, httpClient: HttpClient
+)(implicit ec: ExecutionContext) extends SearchManager with Logging with SprayJsonSupport {
+
+  import SearchResponse._
+
+  override def searchFrom(engineName: String, request: String): Response = {
     enginesConfig.engines.get(engineName)
       .map { cfg =>
         val url = cfg.endpoint.toUrl
         val path = s"$url?request=$request"
-//        httpClient.get(path)(parseResponse) match {
-//          case Failure(exception) =>
-//            internalError(s"Error while processing request $request to $engineName", exception)
-//          case Success(value) =>
-//            log.info(s"Success for ${engineName}")
-//            value
-//        }
+        httpClient.doGet[SearchResponse](path)
       }.getOrElse {
       Response.FailedResponse[SearchResponse](s"Unsupported engine $engineName")
     }
 
-???
+    ???
   }
 
   override def engines: Seq[String] = enginesConfig.engines.keys.toSeq

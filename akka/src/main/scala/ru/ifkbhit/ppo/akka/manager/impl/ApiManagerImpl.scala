@@ -6,7 +6,6 @@ import akka.util.Timeout
 import ru.ifkbhit.ppo.akka.actor.ApiActor
 import ru.ifkbhit.ppo.akka.config.ApiActorConfig
 import ru.ifkbhit.ppo.akka.manager.{ApiManager, SearchManager}
-import ru.ifkbhit.ppo.akka.model.ApiResponse
 import ru.ifkbhit.ppo.common.Logging
 import ru.ifkbhit.ppo.common.model.response.Response
 
@@ -20,7 +19,7 @@ class ApiManagerImpl(searchManager: SearchManager, apiActorConfig: ApiActorConfi
     request: String
   )(
     implicit ec: ExecutionContext
-  ): Future[Response[ApiResponse]] = {
+  ): Future[Response] = {
 
     val actor = system.actorOf(
       Props(
@@ -34,14 +33,14 @@ class ApiManagerImpl(searchManager: SearchManager, apiActorConfig: ApiActorConfi
     implicit val timeout: Timeout = Timeout(apiActorConfig.fullTimeout)
 
     ask(actor, ApiActor.ApiRequestMessage(request))
-      .mapTo[Response[ApiResponse]]
+      .mapTo[Response]
       .recover {
         case e: AskTimeoutException =>
           log.error("Timeout in manager", e)
-          Response.FailedResponse("Server timeout")
+          Response.failed("Server timeout")
         case e =>
           log.error("Unexpected error while asking", e)
-          Response.FailedResponse("Internal error")
+          Response.failed("Internal error")
       }
   }
 }

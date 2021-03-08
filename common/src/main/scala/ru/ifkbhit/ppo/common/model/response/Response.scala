@@ -1,7 +1,7 @@
 package ru.ifkbhit.ppo.common.model.response
 
 import spray.json.DefaultJsonProtocol._
-import spray.json.{JsValue, JsonFormat, JsonWriter, enrichAny}
+import spray.json.{JsValue, JsonFormat, RootJsonWriter}
 
 sealed trait Response {
   def responseCode: Int
@@ -14,7 +14,7 @@ object Response {
   private case class SuccessfulResponse[A](response: A)
 
   // inner
-  case class FailedStub(msg: String, responseCode: Int) extends Response
+  private case class FailedStub(msg: String, responseCode: Int) extends Response
 
   private trait SuccessStub extends Response {
     override def responseCode: Int = 200
@@ -49,7 +49,7 @@ object Response {
   private def successfulResponseFormat[A](implicit f: JsonFormat[A]) = jsonFormat1(SuccessfulResponse[A])
 
 
-  implicit object ResponseJsonFormat extends JsonWriter[Response] {
+  implicit object ResponseJsonFormat extends RootJsonWriter[Response] {
 
     override def write(obj: Response): JsValue = {
       obj match {
@@ -62,31 +62,5 @@ object Response {
       }
     }
   }
-
-}
-
-
-object Tst {
-
-  case class Test(a: Int, data: Seq[String])
-
-  implicit val v: JsonFormat[Test] = jsonFormat2(Test)
-
-
-  import Response._
-
-  def main(args: Array[String]): Unit = {
-
-    val t = Test(1, Seq("mama", "papa", "dada"))
-
-    val s: Response = success(t)
-    val f: Response = failed("some err")
-
-
-    println(s.toJson)
-    println(f.toJson)
-
-  }
-
 
 }

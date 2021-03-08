@@ -23,16 +23,9 @@ class ApiService(
     val url = apiConfig.endpoint.toUrl
     import system.dispatcher
 
-    Http().newServerAt(apiConfig.endpoint.host, apiConfig.endpoint.port).bindFlow(handler.route)
-
     val bindingF =
-//      Http().newServerAt(apiConfig.endpoint.host, apiConfig.endpoint.port).bindFlow(handler.route)
+      Http().newServerAt(apiConfig.endpoint.host, apiConfig.endpoint.port).bindFlow(handler.route)
 
-      Http().bindAndHandle(
-      handler.route,
-      apiConfig.endpoint.host,
-      apiConfig.endpoint.port
-    )
     bindingF.onComplete {
       case Success(bindingResult) =>
 

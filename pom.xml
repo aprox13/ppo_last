@@ -12,6 +12,7 @@
         <module>akka</module>
         <module>common</module>
         <module>rx</module>
+        <module>cqrs</module>
     </modules>
 
 

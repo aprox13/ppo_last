@@ -2,7 +2,7 @@ package ru.ifkbhit.ppo.akka
 
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.Materializer
 import ru.ifkbhit.ppo.akka.config.AppConfig
 import ru.ifkbhit.ppo.akka.handler.ApiHandler
 import ru.ifkbhit.ppo.akka.manager.impl.{ApiManagerImpl, SearchManagerImpl}
