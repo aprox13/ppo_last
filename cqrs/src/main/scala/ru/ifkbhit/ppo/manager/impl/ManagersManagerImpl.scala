@@ -13,7 +13,7 @@ import spray.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ManagerManagerImpl(
+class ManagersManagerImpl(
   database: Connection,
   events: EventActions,
   managerEvents: ManagerActions

@@ -6,7 +6,7 @@ import org.joda.time.DateTime
 import ru.ifkbhit.ppo.actions.{DefaultManagerActions, ManagerActions}
 import ru.ifkbhit.ppo.common.model.response.ResponseMatcher
 import ru.ifkbhit.ppo.manager.ManagersManager
-import ru.ifkbhit.ppo.manager.impl.{GateManagerImpl, ManagerManagerImpl}
+import ru.ifkbhit.ppo.manager.impl.{GateManagerImpl, ManagersManagerImpl}
 import ru.ifkbhit.ppo.model.manager.{UserPayload, UserResult}
 import ru.ifkbhit.ppo.utils.BaseManagerSpec
 
@@ -16,9 +16,8 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
 
   import BaseManagerSpec._
 
-
   private val managerActions: ManagerActions = new DefaultManagerActions(eventActions)
-  private val managerManager: ManagersManager = new ManagerManagerImpl(stub[Connection], eventActions, managerActions)
+  private val managerManager: ManagersManager = new ManagersManagerImpl(stub[Connection], eventActions, managerActions)
 
   private def gateManager = new GateManagerImpl(connection, eventActions, managerActions)
 
