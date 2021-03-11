@@ -9,7 +9,7 @@ import ru.ifkbhit.ppo.common.service.ApiService
 import ru.ifkbhit.ppo.config.AppConfig
 import ru.ifkbhit.ppo.handler.ManagerHandler
 import ru.ifkbhit.ppo.manager.impl.ManagerManagerImpl
-import ru.ifkbhit.ppo.util.EventStoreProvider
+import ru.ifkbhit.ppo.util.{EventStoreConnectionProvider, SimpleTimeProvider, TimeProvider}
 
 import scala.concurrent.ExecutionContext
 
@@ -22,10 +22,11 @@ object ManagersApp extends BaseApp {
     implicit val actorSystem: ActorSystem = ActorSystemProvider.provide(cfg.managers.actorSystemConfig)
     implicit val mat: Materializer = Materializer(actorSystem)
     implicit val ec: ExecutionContext = actorSystem.dispatcher
+    implicit val timeProvider: TimeProvider = SimpleTimeProvider
 
-    val db = EventStoreProvider.get(cfg.eventStoreConfig.connectionString)
+    val db = EventStoreConnectionProvider.get(cfg.eventStoreConfig.connectionString)
 
-    val events = DefaultEventActions
+    val events = new DefaultEventActions
     val managerActions = new DefaultManagerActions(events)
     val manager = new ManagerManagerImpl(db, events, managerActions)
     val handler = new ManagerHandler(manager)

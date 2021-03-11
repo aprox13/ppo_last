@@ -2,10 +2,12 @@ package ru.ifkbhit.ppo.actions
 
 import java.sql.{PreparedStatement, Statement}
 
+import org.joda.time.format.DateTimeFormat
 import ru.ifkbhit.ppo.common.Logging
 import ru.ifkbhit.ppo.dao.DbAction
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
 import ru.ifkbhit.ppo.util.SqlUtils.parseResultSet
+import ru.ifkbhit.ppo.util.TimeProvider
 import spray.json.JsValue
 
 trait EventActions extends Logging {
@@ -22,7 +24,7 @@ trait EventActions extends Logging {
     insertOne(eventType, payload, aggregatedId).flatMap(getOne)
 }
 
-object DefaultEventActions extends EventActions {
+class DefaultEventActions(implicit timeProvider: TimeProvider) extends EventActions {
   private type ArgSetter = (PreparedStatement, Int) => Unit
 
   private case class Filter(sql: String, setters: Seq[ArgSetter])
@@ -75,10 +77,13 @@ object DefaultEventActions extends EventActions {
 
   override def insertOne(eventType: EventType, payload: JsValue, aggregatedId: Long): DbAction[Long] =
     DbAction { conn =>
+
+      val ts = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(timeProvider.now())
+
       val ps = conn.prepareStatement(
         s"""
-              insert into events (aggregate_id, event_type, data)
-              values ($aggregatedId, '${eventType.entryName}', '${payload.compactPrint}')
+              insert into events (aggregate_id, event_type, data, event_time)
+              values ($aggregatedId, '${eventType.entryName}', '${payload.compactPrint}', '$ts')
               """,
         Statement.RETURN_GENERATED_KEYS
       )

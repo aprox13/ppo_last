@@ -1,6 +1,7 @@
 package ru.ifkbhit.ppo.model.manager
 
 import org.joda.time.DateTime
+import ru.ifkbhit.ppo.util.TimeProvider
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
@@ -14,5 +15,5 @@ object RenewPassPayload {
 
   implicit val format: JsonFormat[RenewPassPayload] = jsonFormat1(RenewPassPayload.apply)
 
-  def today(): RenewPassPayload = RenewPassPayload(DateTime.now().withTimeAtStartOfDay())
+  def today(implicit timeProvider: TimeProvider): RenewPassPayload = RenewPassPayload(timeProvider.now().withTimeAtStartOfDay())
 }

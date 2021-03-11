@@ -2,15 +2,15 @@ package ru.ifkbhit.ppo.utils
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.joda.time.DateTime
 import ru.ifkbhit.ppo.actions.EventActions
 import ru.ifkbhit.ppo.dao.DbAction
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
+import ru.ifkbhit.ppo.util.TimeProvider
 import spray.json.JsValue
 
 import scala.collection.mutable.ArrayBuffer
 
-class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]]) extends EventActions {
+class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]])(implicit timeProvider: TimeProvider) extends EventActions {
   override def getLastEventOf(eventTypes: Seq[EventType], aggregateId: Option[Long]): DbAction[Option[Event]] =
     DbAction.success {
       database.get()
@@ -31,14 +31,18 @@ class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]]) extends 
       aggregatedId,
       eventType,
       payload,
-      DateTime.now()
+      timeProvider.now()
     )
 
     database.get() += event
+
+    newId
   }
 
   override def getOne(eventId: Long): DbAction[Event] =
     DbAction.success {
       database.get().find(_.eventId == eventId)
+        .ensuring(_.nonEmpty, s"Couldn't find event by id $eventId")
+        .head
     }
 }

@@ -9,7 +9,7 @@ import ru.ifkbhit.ppo.common.service.ApiService
 import ru.ifkbhit.ppo.config.AppConfig
 import ru.ifkbhit.ppo.handler.GateHandler
 import ru.ifkbhit.ppo.manager.impl.GateManagerImpl
-import ru.ifkbhit.ppo.util.EventStoreProvider
+import ru.ifkbhit.ppo.util.{EventStoreConnectionProvider, SimpleTimeProvider, TimeProvider}
 
 import scala.concurrent.ExecutionContext
 
@@ -20,10 +20,12 @@ object GateApp extends BaseApp {
     implicit val actorSystem: ActorSystem = ActorSystemProvider.provide(cfg.gate.actorSystemConfig)
     implicit val mat: Materializer = Materializer(actorSystem)
     implicit val ec: ExecutionContext = actorSystem.dispatcher
+    implicit val timeProvider: TimeProvider = SimpleTimeProvider
 
-    val db = EventStoreProvider.get(cfg.eventStoreConfig.connectionString)
 
-    val events = DefaultEventActions
+    val db = EventStoreConnectionProvider.get(cfg.eventStoreConfig.connectionString)
+
+    val events = new DefaultEventActions
     val managerActions = new DefaultManagerActions(events)
     val manager = new GateManagerImpl(db, events, managerActions)
     val handler = new GateHandler(manager)

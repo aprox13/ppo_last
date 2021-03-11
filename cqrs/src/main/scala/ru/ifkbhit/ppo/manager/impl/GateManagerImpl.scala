@@ -42,7 +42,15 @@ class GateManagerImpl(database: Connection, events: EventActions, managers: Mana
       _ <- if (lastEvent.exists(_.eventType == EventType.UserEntered)) {
         events.insertOne(EventType.UserExit, JsObject(), userId)
       } else {
-        DbAction.failed(new RuntimeException("User already exit"))
+        DbAction.failed {
+          val msg = if (lastEvent.isEmpty) {
+            "User not enter yet"
+          } else {
+            "User already exit"
+          }
+
+          new RuntimeException(msg)
+        }
       }
     } yield ())
       .transactional(database)

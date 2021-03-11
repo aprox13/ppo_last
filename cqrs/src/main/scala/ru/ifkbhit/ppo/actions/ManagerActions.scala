@@ -3,6 +3,7 @@ package ru.ifkbhit.ppo.actions
 import ru.ifkbhit.ppo.dao.DbAction
 import ru.ifkbhit.ppo.model.event.EventType
 import ru.ifkbhit.ppo.model.manager.{RenewPassPayload, UserPayload, UserResult}
+import ru.ifkbhit.ppo.util.TimeProvider
 
 trait ManagerActions {
   def getUserPayload(userId: Long): DbAction[UserPayload]
@@ -15,7 +16,7 @@ trait ManagerActions {
 
 }
 
-class DefaultManagerActions(eventActions: EventActions) extends ManagerActions {
+class DefaultManagerActions(eventActions: EventActions)(implicit timeProvider: TimeProvider) extends ManagerActions {
 
   def getUserPayload(userId: Long): DbAction[UserPayload] =
     for {
@@ -36,5 +37,5 @@ class DefaultManagerActions(eventActions: EventActions) extends ManagerActions {
     for {
       user <- getUserPayload(userId)
       renew <- eventActions.getLastEvent(EventType.RenewPass, Some(userId))
-    } yield UserResult.build(user, renew.map(_.payloadAs[RenewPassPayload]))
+    } yield UserResult.build(userId, user, renew.map(_.payloadAs[RenewPassPayload]))
 }

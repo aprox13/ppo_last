@@ -3,6 +3,8 @@ package ru.ifkbhit.ppo.common.model.response
 import spray.json.DefaultJsonProtocol._
 import spray.json.{JsValue, JsonFormat, RootJsonWriter}
 
+import scala.reflect.ClassTag
+
 sealed trait Response {
   def responseCode: Int
 }
@@ -11,12 +13,13 @@ object Response {
 
   // result
   private case class FailedResponse(error: String)
+
   private case class SuccessfulResponse[A](response: A)
 
   // inner
-  private case class FailedStub(msg: String, responseCode: Int) extends Response
+  private[response] case class FailedStub(msg: String, responseCode: Int) extends Response
 
-  private trait SuccessStub extends Response {
+  private[response] trait SuccessStub extends Response {
     override def responseCode: Int = 200
 
     type A
@@ -61,6 +64,21 @@ object Response {
           failedFormat.write(FailedResponse(x.msg))
       }
     }
+  }
+
+  implicit class ResponseOps(val response: Response) extends AnyVal {
+
+    def as[T: ClassTag]: T = {
+      response match {
+        case successStub: SuccessStub if successStub.response.isInstanceOf[T] =>
+          successStub.response.asInstanceOf[T]
+        case x =>
+          throw new RuntimeException(s"Unexpected response $x")
+      }
+
+
+    }
+
   }
 
 }
