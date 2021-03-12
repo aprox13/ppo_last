@@ -7,6 +7,8 @@ object MapOps {
     def applySideEffect(f: A => Any): A = { f(x); x }
 
     def applyTransformIf(test: Boolean)(f: A => A): A = if (test) f(x) else x
+
+    def applyTransformIfPred(test: A => Boolean)(f: A => A): A = if (test(x)) f(x) else x
   }
 
 }

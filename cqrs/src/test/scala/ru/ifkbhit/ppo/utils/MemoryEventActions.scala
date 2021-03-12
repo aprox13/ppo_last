@@ -2,23 +2,16 @@ package ru.ifkbhit.ppo.utils
 
 import java.util.concurrent.atomic.AtomicReference
 
-import ru.ifkbhit.ppo.actions.{DbAction, EventActions}
+import ru.ifkbhit.ppo.actions.{DbAction, EventActions, Sorting}
+import ru.ifkbhit.ppo.common.Logging
+import ru.ifkbhit.ppo.common.utils.MapOps._
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
 import ru.ifkbhit.ppo.util.TimeProvider
 import spray.json.JsValue
 
 import scala.collection.mutable.ArrayBuffer
 
-class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]])(implicit timeProvider: TimeProvider) extends EventActions {
-  override def getLastEventOf(eventTypes: Seq[EventType], aggregateId: Option[Long]): DbAction[Option[Event]] =
-    DbAction.success {
-      database.get()
-        .sortBy(_.eventTime.getMillis)
-        .reverse
-        .find { event =>
-          eventTypes.contains(event.eventType) && aggregateId.forall(_ == event.aggregateId)
-        }
-    }
+class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]])(implicit timeProvider: TimeProvider) extends EventActions with Logging {
 
   override def insertOne(eventType: EventType, payload: JsValue, aggregatedId: Long): DbAction[Long] = DbAction.success {
     val newId = database.get()
@@ -38,10 +31,20 @@ class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]])(implicit
     newId
   }
 
-  override def getOne(eventId: Long): DbAction[Event] =
+  override protected def find(request: EventActions.GetEvents): DbAction[Seq[Event]] =
+
     DbAction.success {
-      database.get().find(_.eventId == eventId)
-        .ensuring(_.nonEmpty, s"Couldn't find event by id $eventId")
-        .head
+      database.get()
+        .applyTransformIf(request.timeSorting.isDefined) { events =>
+          events.sortBy(_.eventTime.getMillis)
+            .applyTransformIf(request.timeSorting.contains(Sorting.Desc))(_.reverse)
+        }
+        .filter(e => request.eventTime.contains(e.eventTime))
+        .filter(e => request.eventId.forall(_ == e.eventId))
+        .filter(e => request.aggregateId.forall(_ == e.aggregateId))
+        .filter(e => request.eventTypes.forall(_.contains(e.eventType)))
+        .applyTransformIf(request.limit.isDefined) {
+          _.take(request.limit.get)
+        }
     }
 }

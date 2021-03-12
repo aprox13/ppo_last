@@ -16,7 +16,6 @@ trait ManagerActions {
 object ManagerActions {
 
   case class UserNotFound(id: Long) extends RuntimeException(s"User not found: id=$id")
-
 }
 
 class DefaultManagerActions(eventActions: EventActions)(implicit timeProvider: TimeProvider) extends ManagerActions {

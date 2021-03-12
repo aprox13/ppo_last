@@ -31,4 +31,10 @@ object DateTimeUtils {
     }
   }
 
+  implicit class DateTimeOps(val dt: DateTime) extends AnyVal {
+
+    def asPsqlTimestamp: String =
+      org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(dt)
+  }
+
 }

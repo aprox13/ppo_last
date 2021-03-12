@@ -6,6 +6,7 @@ import ru.ifkbhit.ppo.actions.DbAction.EmptyActionResult
 import ru.ifkbhit.ppo.util.SqlUtils.ConnectionOps
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 case class DbAction[T](f: Connection => T) {
 
@@ -31,6 +32,12 @@ case class DbAction[T](f: Connection => T) {
     } else {
       throw EmptyActionResult
     }
+  }
+
+  def recover(pf: PartialFunction[Throwable, T]): DbAction[T] = DbAction { conn =>
+    Try(f(conn))
+      .recover(pf)
+      .get
   }
 }
 

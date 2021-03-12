@@ -19,7 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 
-class BaseManagerSpec extends WordSpec with Matchers with MockFactory with BeforeAndAfter {
+trait BaseManagerSpec extends WordSpec with Matchers with MockFactory with BeforeAndAfter {
 
   protected val database: AtomicReference[ArrayBuffer[Event]] = new AtomicReference[ArrayBuffer[Event]](ArrayBuffer())
   protected var connection: Connection = _
@@ -97,7 +97,7 @@ object BaseManagerSpec {
         case x@Failure(_) =>
           MatchResult(
             matches = false,
-            s"Success expected${inner.map(i => s" with entry ${i}").getOrElse("")}, but found $x",
+            s"Success expected${inner.map(i => s" with entry $i").getOrElse("")}, but found $x",
             s"Success"
           )
         case x@Success(value) =>
@@ -120,13 +120,13 @@ object BaseManagerSpec {
         case x@Failure(e) =>
           MatchResult(
             inner.forall(i => i == e),
-            s"Failure expected${inner.map(i => s" with exception ${i}").getOrElse("")}, but found $x",
+            s"Failure expected${inner.map(i => s" with exception $i").getOrElse("")}, but found $x",
             s"Failure"
           )
         case x@Success(_) =>
           MatchResult(
             matches = false,
-            s"Failure expected${inner.map(i => s" with exception ${i}").getOrElse("")}, but found $x",
+            s"Failure expected${inner.map(i => s" with exception $i").getOrElse("")}, but found $x",
             s"Found $x"
           )
       }
