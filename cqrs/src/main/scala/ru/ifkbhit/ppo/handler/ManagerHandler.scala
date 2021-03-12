@@ -9,14 +9,13 @@ import ru.ifkbhit.ppo.model.manager.UserPayload
 
 import scala.concurrent.ExecutionContext
 
-class ManagerHandler(manager: ManagersManager)(implicit ec: ExecutionContext) extends JsonAnsweredHandler with BaseDirectives {
-
+class ManagerHandler(manager: ManagersManager)(implicit val ec: ExecutionContext) extends JsonAnsweredHandler with BaseDirectives {
 
   private def getUserRoute: Route =
     (get & pathPrefix("manager")
       & Query
       & UserInPath) { userId =>
-      complete(manager.getUser(userId))
+      completeResponse(manager.getUser(userId))
     }
 
   private def renewPass: Route =
@@ -25,7 +24,7 @@ class ManagerHandler(manager: ManagersManager)(implicit ec: ExecutionContext) ex
       & UserInPath
       & parameters('days.as[Int])) {
       case (user, days) =>
-        complete(manager.renewPass(user, days))
+        completeResponse(manager.renewPass(user, days))
     }
 
   private def addUser: Route =
@@ -34,7 +33,7 @@ class ManagerHandler(manager: ManagersManager)(implicit ec: ExecutionContext) ex
       & pathPrefix("user" / "add")
       & entity(as[UserPayload])) {
       payload =>
-        complete(manager.addUser(payload))
+        completeResponse(manager.addUser(payload))
     }
 
   override def route: Route = getUserRoute ~ renewPass ~ addUser

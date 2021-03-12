@@ -2,6 +2,7 @@ package ru.ifkbhit.ppo.gate
 
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import ru.ifkbhit.ppo.actions.ManagerActions.UserNotFound
 import ru.ifkbhit.ppo.actions.{DefaultManagerActions, ManagerActions}
 import ru.ifkbhit.ppo.common.model.response.ResponseMatcher
 import ru.ifkbhit.ppo.manager.ManagersManager
@@ -28,16 +29,13 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
       val payload2 = UserPayload("user2")
 
       withSuccessTransaction {
-        managerManager.addUser(payload1)
-          .futureValue shouldBe successfulResponse(UserResult(1, payload1.name, passExpire = None, isPassActive = false))
+        managerManager.addUser(payload1) shouldBe successFuture(UserResult(1, payload1.name, passExpire = None, isPassActive = false))
       }
       withSuccessTransaction {
-        managerManager.addUser(payload2)
-          .futureValue shouldBe successfulResponse(UserResult(2, payload2.name, passExpire = None, isPassActive = false))
+        managerManager.addUser(payload2) shouldBe successFuture(UserResult(2, payload2.name, passExpire = None, isPassActive = false))
       }
       withSuccessTransaction {
-        managerManager.addUser(payload1)
-          .futureValue shouldBe successfulResponse(UserResult(3, payload1.name, passExpire = None, isPassActive = false))
+        managerManager.addUser(payload1) shouldBe successFuture(UserResult(3, payload1.name, passExpire = None, isPassActive = false))
       }
 
       val expectedInDatabase = Seq(
@@ -72,7 +70,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
       timer.useRealNow()
 
       withFailedTransaction {
-        managerManager.getUser(1111).futureValue shouldBe failedResponse("User not found: id=1111")
+        managerManager.getUser(1111) shouldBe failureFuture(UserNotFound(1111))
       }
     }
 
@@ -82,12 +80,11 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = withSuccessTransaction {
-          managerManager.addUser(UserPayload("user1")).futureValue.as[UserResult]
+          managerManager.addUser(UserPayload("user1")).futureValue
         }
 
         withSuccessTransaction {
-          managerManager.getUser(user.id)
-            .futureValue shouldBe successfulResponse(UserResult(id = 1, name = "user1", passExpire = None, isPassActive = false))
+          managerManager.getUser(user.id) shouldBe successFuture(UserResult(id = 1, name = "user1", passExpire = None, isPassActive = false))
         }
       }
 
@@ -97,11 +94,11 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.setNow(timePoint)
 
         val user = withSuccessTransaction {
-          managerManager.addUser(UserPayload("user1")).futureValue.as[UserResult]
+          managerManager.addUser(UserPayload("user1")).futureValue
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         timer.tick(1.day)
@@ -115,8 +112,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
           )
 
         withSuccessTransaction {
-          managerManager.getUser(user.id)
-            .futureValue shouldBe successfulResponse(expectedResult)
+          managerManager.getUser(user.id) shouldBe successFuture(expectedResult)
         }
       }
 
@@ -126,11 +122,11 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.setNow(timePoint)
 
         val user = withSuccessTransaction {
-          managerManager.addUser(UserPayload("user1")).futureValue.as[UserResult]
+          managerManager.addUser(UserPayload("user1")).futureValue
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         timer.tick(7.day)
@@ -144,8 +140,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
           )
 
         withSuccessTransaction {
-          managerManager.getUser(user.id)
-            .futureValue shouldBe successfulResponse(expectedResult)
+          managerManager.getUser(user.id) shouldBe successFuture(expectedResult)
         }
       }
     }
@@ -156,11 +151,11 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = withSuccessTransaction {
-          managerManager.addUser(UserPayload("user1")).futureValue.as[UserResult]
+          managerManager.addUser(UserPayload("user1")).futureValue
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         val expected =
@@ -172,8 +167,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
           )
 
         withSuccessTransaction {
-          managerManager.getUser(user.id)
-            .futureValue shouldBe successfulResponse(expected)
+          managerManager.getUser(user.id) shouldBe successFuture(expected)
         }
       }
 
@@ -181,17 +175,17 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.setNow(DateTime.now().minusDays(10))
 
         val user = withSuccessTransaction {
-          managerManager.addUser(UserPayload("user1")).futureValue.as[UserResult]
+          managerManager.addUser(UserPayload("user1")).futureValue
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         timer.tick(6.days)
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         val expected =
@@ -203,8 +197,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
           )
 
         withSuccessTransaction {
-          managerManager.getUser(user.id)
-            .futureValue shouldBe successfulResponse(expected)
+          managerManager.getUser(user.id) shouldBe successFuture(expected)
         }
       }
 
@@ -212,17 +205,17 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.setNow(DateTime.now().minusDays(10))
 
         val user = withSuccessTransaction {
-          managerManager.addUser(UserPayload("user1")).futureValue.as[UserResult]
+          managerManager.addUser(UserPayload("user1")).futureValue
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         timer.tick(3.days)
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
+          managerManager.renewPass(user.id, 5) shouldBe successFuture
         }
 
         val expected =
@@ -234,8 +227,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
           )
 
         withSuccessTransaction {
-          managerManager.getUser(user.id)
-            .futureValue shouldBe successfulResponse(expected)
+          managerManager.getUser(user.id) shouldBe successFuture(expected)
         }
       }
     }
@@ -244,7 +236,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
       timer.useRealNow()
 
       withFailedTransaction {
-        managerManager.renewPass(1111, 5).futureValue shouldBe failedResponse("User not found: id=1111")
+        managerManager.renewPass(1111, 5) shouldBe failureFuture(UserNotFound(1111))
       }
 
     }

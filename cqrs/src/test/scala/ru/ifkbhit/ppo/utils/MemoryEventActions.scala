@@ -2,8 +2,7 @@ package ru.ifkbhit.ppo.utils
 
 import java.util.concurrent.atomic.AtomicReference
 
-import ru.ifkbhit.ppo.actions.EventActions
-import ru.ifkbhit.ppo.dao.DbAction
+import ru.ifkbhit.ppo.actions.{DbAction, EventActions}
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
 import ru.ifkbhit.ppo.util.TimeProvider
 import spray.json.JsValue

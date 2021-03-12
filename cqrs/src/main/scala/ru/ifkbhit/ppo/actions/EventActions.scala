@@ -4,7 +4,6 @@ import java.sql.{PreparedStatement, Statement}
 
 import org.joda.time.format.DateTimeFormat
 import ru.ifkbhit.ppo.common.Logging
-import ru.ifkbhit.ppo.dao.DbAction
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
 import ru.ifkbhit.ppo.util.SqlUtils.parseResultSet
 import ru.ifkbhit.ppo.util.TimeProvider

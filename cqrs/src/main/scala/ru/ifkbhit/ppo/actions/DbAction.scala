@@ -1,8 +1,8 @@
-package ru.ifkbhit.ppo.dao
+package ru.ifkbhit.ppo.actions
 
 import java.sql.Connection
 
-import ru.ifkbhit.ppo.dao.DbAction.EmptyActionResult
+import ru.ifkbhit.ppo.actions.DbAction.EmptyActionResult
 import ru.ifkbhit.ppo.util.SqlUtils.ConnectionOps
 
 import scala.concurrent.{ExecutionContext, Future}

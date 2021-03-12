@@ -1,6 +1,6 @@
 package ru.ifkbhit.ppo.actions
 
-import ru.ifkbhit.ppo.dao.DbAction
+import ru.ifkbhit.ppo.actions.ManagerActions.UserNotFound
 import ru.ifkbhit.ppo.model.event.EventType
 import ru.ifkbhit.ppo.model.manager.{RenewPassPayload, UserPayload, UserResult}
 import ru.ifkbhit.ppo.util.TimeProvider
@@ -11,6 +11,9 @@ trait ManagerActions {
   def getNextUserId: DbAction[Long]
 
   def getUser(userId: Long): DbAction[UserResult]
+}
+
+object ManagerActions {
 
   case class UserNotFound(id: Long) extends RuntimeException(s"User not found: id=$id")
 

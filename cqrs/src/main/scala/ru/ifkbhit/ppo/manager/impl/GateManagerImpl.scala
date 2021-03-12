@@ -2,20 +2,18 @@ package ru.ifkbhit.ppo.manager.impl
 
 import java.sql.Connection
 
-import ru.ifkbhit.ppo.actions.{EventActions, ManagerActions}
-import ru.ifkbhit.ppo.common.model.response.Response
-import ru.ifkbhit.ppo.dao.DbAction
-import ru.ifkbhit.ppo.dao.DbAction.EmptyActionResult
+import ru.ifkbhit.ppo.actions.DbAction.EmptyActionResult
+import ru.ifkbhit.ppo.actions.{DbAction, EventActions, ManagerActions}
 import ru.ifkbhit.ppo.manager.GateManager
+import ru.ifkbhit.ppo.manager.GateManager._
 import ru.ifkbhit.ppo.model.event.EventType
-import spray.json.DefaultJsonProtocol.StringJsonFormat
 import spray.json.JsObject
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class GateManagerImpl(database: Connection, events: EventActions, managers: ManagerActions)(implicit ec: ExecutionContext) extends GateManager {
 
-  override def enter(userId: Long): Future[Response] =
+  override def enter(userId: Long): Future[String] =
     (for {
       user <- managers.getUser(userId)
       if user.isPassActive
@@ -23,19 +21,17 @@ class GateManagerImpl(database: Connection, events: EventActions, managers: Mana
       _ <- if (lastEvent.forall(_.eventType == EventType.UserExit)) {
         events.insertOne(EventType.UserEntered, JsObject(), userId)
       } else {
-        DbAction.failed(new RuntimeException("User already enter"))
+        DbAction.failed(UserAlreadyEnter)
       }
     } yield ())
       .transactional(database)
-      .map(_ => Response.success("User entered"))
-      .recover[Response] {
+      .map(_ => "User entered")
+      .recover {
         case EmptyActionResult =>
-          Response.failed("No pass found for user")
-        case e =>
-          Response.fromThrowable(e)
+          throw UserHasNoPass
       }
 
-  override def exit(userId: Long): Future[Response] =
+  override def exit(userId: Long): Future[String] =
     (for {
       _ <- managers.getUser(userId)
       lastEvent <- events.getLastEventOf(Seq(EventType.UserExit, EventType.UserEntered), Some(userId))
@@ -43,20 +39,14 @@ class GateManagerImpl(database: Connection, events: EventActions, managers: Mana
         events.insertOne(EventType.UserExit, JsObject(), userId)
       } else {
         DbAction.failed {
-          val msg = if (lastEvent.isEmpty) {
-            "User not enter yet"
+          throw if (lastEvent.isEmpty) {
+            UserNotEnterYet
           } else {
-            "User already exit"
+            UserAlreadyExit
           }
-
-          new RuntimeException(msg)
         }
       }
     } yield ())
       .transactional(database)
-      .map(_ => Response.success("User exit"))
-      .recover[Response] {
-        case e =>
-          Response.fromThrowable(e)
-      }
+      .map(_ => "User exit")
 }

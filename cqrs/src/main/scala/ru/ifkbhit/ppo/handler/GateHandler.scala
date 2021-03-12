@@ -6,17 +6,19 @@ import ru.ifkbhit.ppo.BaseDirectives
 import ru.ifkbhit.ppo.common.handler.JsonAnsweredHandler
 import ru.ifkbhit.ppo.manager.GateManager
 
-class GateHandler(gateManager: GateManager) extends JsonAnsweredHandler with BaseDirectives {
+import scala.concurrent.ExecutionContext
+
+class GateHandler(gateManager: GateManager)(implicit val ec: ExecutionContext) extends JsonAnsweredHandler with BaseDirectives {
 
 
   private def enterRoute: Route =
     (get & pathPrefix("gate") & Command & UserInPath & pathPrefix("enter")) { user =>
-      complete(gateManager.enter(user))
+      completeResponse(gateManager.enter(user))
     }
 
   private def exitRoute: Route =
     (get & pathPrefix("gate") & Command & UserInPath & pathPrefix("exit")) { user =>
-      complete(gateManager.exit(user))
+      completeResponse(gateManager.exit(user))
     }
 
   override def route: Route =

@@ -3,9 +3,9 @@ package ru.ifkbhit.ppo.manager.impl
 import java.sql.Connection
 
 import ru.ifkbhit.ppo.actions._
-import ru.ifkbhit.ppo.common.model.response.Response
 import ru.ifkbhit.ppo.common.utils.MapOps._
 import ru.ifkbhit.ppo.manager.ManagersManager
+import ru.ifkbhit.ppo.manager.ManagersManager.PositiveDaysRequired
 import ru.ifkbhit.ppo.model.event.EventType
 import ru.ifkbhit.ppo.model.manager.{RenewPassPayload, UserPayload, UserResult}
 import ru.ifkbhit.ppo.util.TimeProvider
@@ -24,32 +24,22 @@ class ManagersManagerImpl(
 
   import UserPayload._
 
-  override def getUser(userId: Long): Future[Response] = {
+  override def getUser(userId: Long): Future[UserResult] =
     (for {
       user <- managerEvents.getUserPayload(userId)
       renew <- events.getLastEvent(EventType.RenewPass, Some(userId))
     } yield UserResult.build(userId, user, renew.map(_.payloadAs[RenewPassPayload])))
       .transactional(database)
-      .map(Response.success[UserResult])
-      .recover {
-        case e =>
-          Response.fromThrowable(e)
-      }
-  }
 
-  override def addUser(payload: UserPayload): Future[Response] = {
+  override def addUser(payload: UserPayload): Future[UserResult] =
     (for {
       newId <- managerEvents.getNextUserId
       event <- events.insertAndReturn(EventType.CreateUser, payload.toJson(UserPayload.format), newId)
     } yield UserResult.build(newId, event.payloadAs[UserPayload], None))
       .transactional(database)
-      .map(Response.success[UserResult])
-      .recover {
-        case e => Response.fromThrowable(e)
-      }
-  }
 
-  override def renewPass(userId: Long, days: Int): Future[Response] = {
+
+  override def renewPass(userId: Long, days: Int): Future[RenewPassPayload] =
     if (days > 0) {
       (for {
         _ <- managerEvents.getUserPayload(userId)
@@ -59,15 +49,9 @@ class ManagersManagerImpl(
         _ <- events.insertOne(EventType.RenewPass, newExpire.toJson, userId)
       } yield newExpire)
         .transactional(database)
-        .map(Response.success[RenewPassPayload])
-        .recover {
-          case e =>
-            Response.fromThrowable(e)
-        }
     } else {
-      Future.successful(Response.failed("Required positive days", 400))
+      Future.failed(PositiveDaysRequired)
     }
-  }
 
 
   private def makeRenew(payloadOpt: Option[RenewPassPayload], days: Int): RenewPassPayload = {
