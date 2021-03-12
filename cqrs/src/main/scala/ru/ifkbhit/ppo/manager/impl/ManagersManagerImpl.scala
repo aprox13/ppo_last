@@ -7,7 +7,7 @@ import ru.ifkbhit.ppo.common.utils.MapOps._
 import ru.ifkbhit.ppo.manager.ManagersManager
 import ru.ifkbhit.ppo.manager.ManagersManager.PositiveDaysRequired
 import ru.ifkbhit.ppo.model.event.EventType
-import ru.ifkbhit.ppo.model.manager.{RenewPassPayload, UserPayload, UserResult}
+import ru.ifkbhit.ppo.model.manager._
 import ru.ifkbhit.ppo.util.TimeProvider
 import spray.json._
 
@@ -24,12 +24,14 @@ class ManagersManagerImpl(
 
   import UserPayload._
 
-  override def getUser(userId: Long): Future[UserResult] =
+  override def getUser(getUserCommand: GetUserCommand): Future[UserResult] = {
+    val userId = getUserCommand.userId
     (for {
       user <- managerEvents.getUserPayload(userId)
       renew <- events.getLastEvent(EventType.RenewPass, Some(userId))
     } yield UserResult.build(userId, user, renew.map(_.payloadAs[RenewPassPayload])))
       .transactional(database)
+  }
 
   override def addUser(payload: UserPayload): Future[UserResult] =
     (for {
@@ -39,7 +41,8 @@ class ManagersManagerImpl(
       .transactional(database)
 
 
-  override def renewPass(userId: Long, days: Int): Future[RenewPassPayload] =
+  override def renewPass(renewPassCommand: RenewPassCommand): Future[RenewPassPayload] = {
+    import renewPassCommand._
     if (days > 0) {
       (for {
         _ <- managerEvents.getUserPayload(userId)
@@ -52,6 +55,7 @@ class ManagersManagerImpl(
     } else {
       Future.failed(PositiveDaysRequired)
     }
+  }
 
 
   private def makeRenew(payloadOpt: Option[RenewPassPayload], days: Int): RenewPassPayload = {

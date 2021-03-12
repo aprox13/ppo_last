@@ -9,11 +9,13 @@ import ru.ifkbhit.ppo.actions.{DefaultManagerActions, ManagerActions}
 import ru.ifkbhit.ppo.manager.GateManager._
 import ru.ifkbhit.ppo.manager.ManagersManager
 import ru.ifkbhit.ppo.manager.impl.{GateManagerImpl, ManagersManagerImpl}
-import ru.ifkbhit.ppo.model.manager.UserPayload
+import ru.ifkbhit.ppo.model.gate.{UserEnterCommand, UserExitCommand}
+import ru.ifkbhit.ppo.model.manager.{RenewPassCommand, UserPayload}
 import ru.ifkbhit.ppo.utils.BaseManagerSpec
 import ru.ifkbhit.ppo.utils.BaseManagerSpec.FutureOps
 
 import scala.concurrent.duration._
+import scala.language.implicitConversions
 import scala.util.Success
 
 class GateManagerSpec extends BaseManagerSpec {
@@ -22,6 +24,10 @@ class GateManagerSpec extends BaseManagerSpec {
   private val managerManager: ManagersManager = new ManagersManagerImpl(stub[Connection], eventActions, managerActions)
 
   private def gateManager = new GateManagerImpl(connection, eventActions, managerActions)
+
+  implicit def asUserEnter(userId: Long): UserEnterCommand = UserEnterCommand(userId)
+
+  implicit def asUserExit(userId: Long): UserExitCommand = UserExitCommand(userId)
 
   "GateManager" should {
 
@@ -33,7 +39,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.tick(1.minute)
 
         withSuccessTransaction {
@@ -47,7 +53,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.tick(1.minute)
 
         withSuccessTransaction {
@@ -65,7 +71,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.tick(1.minute)
 
         withSuccessTransaction {
@@ -109,7 +115,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.setNow(DateTime.now())
 
 
@@ -127,7 +133,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.tick(1.minute)
 
         withFailedTransaction {
@@ -141,7 +147,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.tick(1.minute)
 
         withSuccessTransaction {
@@ -161,7 +167,7 @@ class GateManagerSpec extends BaseManagerSpec {
         val user = managerManager.addUser(UserPayload("user_name_1"))
           .futureValue
 
-        managerManager.renewPass(user.id, 5) shouldBe successFuture
+        managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         timer.tick(1.minute)
 
         withSuccessTransaction {

@@ -1,16 +1,16 @@
 package ru.ifkbhit.ppo.manager
 
-import ru.ifkbhit.ppo.model.manager.{RenewPassPayload, UserPayload, UserResult}
+import ru.ifkbhit.ppo.model.manager._
 
 import scala.concurrent.Future
 
 trait ManagersManager {
 
-  def getUser(userId: Long): Future[UserResult]
+  def getUser(getUserCommand: GetUserCommand): Future[UserResult]
 
   def addUser(payload: UserPayload): Future[UserResult]
 
-  def renewPass(userId: Long, days: Int): Future[RenewPassPayload]
+  def renewPass(renewPassCommand: RenewPassCommand): Future[RenewPassPayload]
 }
 
 object ManagersManager {

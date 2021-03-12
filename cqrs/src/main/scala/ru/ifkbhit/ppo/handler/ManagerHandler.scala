@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import ru.ifkbhit.ppo.BaseDirectives
 import ru.ifkbhit.ppo.common.handler.JsonAnsweredHandler
 import ru.ifkbhit.ppo.manager.ManagersManager
-import ru.ifkbhit.ppo.model.manager.UserPayload
+import ru.ifkbhit.ppo.model.manager.{GetUserCommand, RenewPassCommand, UserPayload}
 
 import scala.concurrent.ExecutionContext
 
@@ -15,7 +15,7 @@ class ManagerHandler(manager: ManagersManager)(implicit val ec: ExecutionContext
     (get & pathPrefix("manager")
       & Query
       & UserInPath) { userId =>
-      completeResponse(manager.getUser(userId))
+      completeResponse(manager.getUser(GetUserCommand(userId)))
     }
 
   private def renewPass: Route =
@@ -24,7 +24,7 @@ class ManagerHandler(manager: ManagersManager)(implicit val ec: ExecutionContext
       & UserInPath
       & parameters('days.as[Int])) {
       case (user, days) =>
-        completeResponse(manager.renewPass(user, days))
+        completeResponse(manager.renewPass(RenewPassCommand(user, days)))
     }
 
   private def addUser: Route =

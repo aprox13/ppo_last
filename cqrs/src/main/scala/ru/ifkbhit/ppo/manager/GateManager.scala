@@ -1,12 +1,14 @@
 package ru.ifkbhit.ppo.manager
 
 
+import ru.ifkbhit.ppo.model.gate.{UserEnterCommand, UserExitCommand}
+
 import scala.concurrent.Future
 
 trait GateManager {
-  def enter(userId: Long): Future[String]
+  def enter(userEnterCommand: UserEnterCommand): Future[String]
 
-  def exit(userId: Long): Future[String]
+  def exit(userExitCommand: UserExitCommand): Future[String]
 }
 
 object GateManager {

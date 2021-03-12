@@ -1,4 +1,4 @@
-package ru.ifkbhit.ppo.gate
+package ru.ifkbhit.ppo.managers
 
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -8,17 +8,20 @@ import ru.ifkbhit.ppo.common.model.response.ResponseMatcher
 import ru.ifkbhit.ppo.manager.ManagersManager
 import ru.ifkbhit.ppo.manager.impl.ManagersManagerImpl
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
-import ru.ifkbhit.ppo.model.manager.{UserPayload, UserResult}
+import ru.ifkbhit.ppo.model.manager.{GetUserCommand, RenewPassCommand, UserPayload, UserResult}
 import ru.ifkbhit.ppo.utils.BaseManagerSpec
 import spray.json.enrichAny
 
 import scala.concurrent.duration.DurationInt
+import scala.language.implicitConversions
 
 class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
 
   private val managerActions: ManagerActions = new DefaultManagerActions(eventActions)
 
   private def managerManager: ManagersManager = new ManagersManagerImpl(connection, eventActions, managerActions)
+
+  implicit def asUserExit(userId: Long): GetUserCommand = GetUserCommand(userId)
 
   "ManagersManager" should {
 
@@ -98,7 +101,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         timer.tick(1.day)
@@ -126,7 +129,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         timer.tick(7.day)
@@ -155,7 +158,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         val expected =
@@ -179,13 +182,13 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         timer.tick(6.days)
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         val expected =
@@ -209,13 +212,13 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
         }
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         timer.tick(3.days)
 
         withSuccessTransaction {
-          managerManager.renewPass(user.id, 5) shouldBe successFuture
+          managerManager.renewPass(RenewPassCommand(user.id, 5)) shouldBe successFuture
         }
 
         val expected =
@@ -236,7 +239,7 @@ class ManagersManagerSpec extends BaseManagerSpec with ResponseMatcher {
       timer.useRealNow()
 
       withFailedTransaction {
-        managerManager.renewPass(1111, 5) shouldBe failureFuture(UserNotFound(1111))
+        managerManager.renewPass(RenewPassCommand(1111, 5)) shouldBe failureFuture(UserNotFound(1111))
       }
 
     }

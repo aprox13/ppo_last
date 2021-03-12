@@ -7,13 +7,15 @@ import ru.ifkbhit.ppo.actions.{DbAction, EventActions, ManagerActions}
 import ru.ifkbhit.ppo.manager.GateManager
 import ru.ifkbhit.ppo.manager.GateManager._
 import ru.ifkbhit.ppo.model.event.EventType
+import ru.ifkbhit.ppo.model.gate.{UserEnterCommand, UserExitCommand}
 import spray.json.JsObject
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class GateManagerImpl(database: Connection, events: EventActions, managers: ManagerActions)(implicit ec: ExecutionContext) extends GateManager {
 
-  override def enter(userId: Long): Future[String] =
+  override def enter(cmd: UserEnterCommand): Future[String] = {
+    val userId = cmd.userId
     (for {
       user <- managers.getUser(userId)
       if user.isPassActive
@@ -30,8 +32,10 @@ class GateManagerImpl(database: Connection, events: EventActions, managers: Mana
         case EmptyActionResult =>
           throw UserHasNoPass
       }
+  }
 
-  override def exit(userId: Long): Future[String] =
+  override def exit(userExitCommand: UserExitCommand): Future[String] = {
+    val userId: Long = userExitCommand.userId
     (for {
       _ <- managers.getUser(userId)
       lastEvent <- events.getLastEventOf(Seq(EventType.UserExit, EventType.UserEntered), Some(userId))
@@ -49,4 +53,5 @@ class GateManagerImpl(database: Connection, events: EventActions, managers: Mana
     } yield ())
       .transactional(database)
       .map(_ => "User exit")
+  }
 }
