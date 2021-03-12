@@ -40,9 +40,15 @@ trait ResponseMatcher {
             s"Successful response"
           )
         case stub: Response.SuccessStub =>
+          val failedMsg = if (entry.isDefined) {
+            s"Expected successful with entry ${entry.get}, but found with ${stub.response}"
+          } else {
+            s"Expected successful"
+          }
+
           MatchResult(
             matches = entry.forall(_ == stub.response),
-            s"Expected successful with entry $entry, but found with ${stub.response}",
+            failedMsg,
             s"Successful with entry $entry"
           )
 

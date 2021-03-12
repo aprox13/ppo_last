@@ -3,6 +3,7 @@ package ru.ifkbhit.ppo.gate
 import java.sql.Connection
 
 import org.joda.time.DateTime
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import ru.ifkbhit.ppo.actions.{DefaultManagerActions, ManagerActions}
 import ru.ifkbhit.ppo.common.model.response.ResponseMatcher
 import ru.ifkbhit.ppo.manager.ManagersManager
@@ -13,8 +14,6 @@ import ru.ifkbhit.ppo.utils.BaseManagerSpec
 import scala.concurrent.duration._
 
 class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
-
-  import BaseManagerSpec._
 
   private val managerActions: ManagerActions = new DefaultManagerActions(eventActions)
   private val managerManager: ManagersManager = new ManagersManagerImpl(stub[Connection], eventActions, managerActions)
@@ -29,14 +28,14 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.tick(1.minute)
 
         withSuccessTransaction {
-          gateManager.enter(user.id).futureResult shouldBe successfulResponse
+          gateManager.enter(user.id).futureValue shouldBe successfulResponse
         }
       }
 
@@ -44,18 +43,18 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.tick(1.minute)
 
         withSuccessTransaction {
-          gateManager.enter(user.id).futureResult shouldBe successfulResponse
+          gateManager.enter(user.id).futureValue shouldBe successfulResponse
         }
 
         withSuccessTransaction {
-          gateManager.exit(user.id).futureResult shouldBe successfulResponse
+          gateManager.exit(user.id).futureValue shouldBe successfulResponse
         }
       }
 
@@ -63,22 +62,22 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.tick(1.minute)
 
         withSuccessTransaction {
-          gateManager.enter(user.id).futureResult shouldBe successfulResponse
+          gateManager.enter(user.id).futureValue shouldBe successfulResponse
         }
 
         withSuccessTransaction {
-          gateManager.exit(user.id).futureResult shouldBe successfulResponse
+          gateManager.exit(user.id).futureValue shouldBe successfulResponse
         }
 
         withSuccessTransaction {
-          gateManager.enter(user.id).futureResult shouldBe successfulResponse
+          gateManager.enter(user.id).futureValue shouldBe successfulResponse
         }
       }
     }
@@ -87,7 +86,7 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
       "user not exists when enter" in {
 
         val response = withFailedTransaction {
-          gateManager.enter(1111).futureResult
+          gateManager.enter(1111).futureValue
         }
 
         response shouldBe failedResponse("User not found: id=1111")
@@ -95,11 +94,11 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
 
       "user has no pass when enter" in {
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
         val response = withFailedTransaction {
-          gateManager.enter(user.id).futureResult
+          gateManager.enter(user.id).futureValue
         }
 
         response shouldBe failedResponse("No pass found for user")
@@ -109,16 +108,16 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.setNow(DateTime.now().minusDays(10))
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.setNow(DateTime.now())
 
 
         val response =
           withFailedTransaction {
-            gateManager.enter(user.id).futureResult
+            gateManager.enter(user.id).futureValue
           }
 
         response shouldBe failedResponse("No pass found for user")
@@ -128,14 +127,14 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.tick(1.minute)
 
         withFailedTransaction {
-          gateManager.exit(user.id).futureResult shouldBe failedResponse("User not enter yet")
+          gateManager.exit(user.id).futureValue shouldBe failedResponse("User not enter yet")
         }
       }
 
@@ -143,20 +142,20 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.tick(1.minute)
 
         withSuccessTransaction {
-          gateManager.enter(user.id).futureResult shouldBe successfulResponse
+          gateManager.enter(user.id).futureValue shouldBe successfulResponse
         }
 
         timer.tick(1.milli)
 
         withFailedTransaction {
-          gateManager.enter(user.id).futureResult shouldBe failedResponse("User already enter")
+          gateManager.enter(user.id).futureValue shouldBe failedResponse("User already enter")
         }
       }
 
@@ -164,24 +163,24 @@ class GateManagerSpec extends BaseManagerSpec with ResponseMatcher {
         timer.useRealNow()
 
         val user = managerManager.addUser(UserPayload("user_name_1"))
-          .futureResult
+          .futureValue
           .as[UserResult]
 
-        managerManager.renewPass(user.id, 5).futureResult shouldBe successfulResponse
+        managerManager.renewPass(user.id, 5).futureValue shouldBe successfulResponse
         timer.tick(1.minute)
 
         withSuccessTransaction {
-          gateManager.enter(user.id).futureResult shouldBe successfulResponse
+          gateManager.enter(user.id).futureValue shouldBe successfulResponse
         }
 
         timer.tick(1.milli)
 
         withSuccessTransaction {
-          gateManager.exit(user.id).futureResult shouldBe successfulResponse
+          gateManager.exit(user.id).futureValue shouldBe successfulResponse
         }
 
         withFailedTransaction {
-          gateManager.exit(user.id).futureResult shouldBe failedResponse
+          gateManager.exit(user.id).futureValue shouldBe failedResponse
         }
       }
     }
