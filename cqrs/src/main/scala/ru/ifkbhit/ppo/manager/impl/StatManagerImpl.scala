@@ -1,29 +1,33 @@
 package ru.ifkbhit.ppo.manager.impl
 
-import java.sql.Connection
-
-import ru.ifkbhit.ppo.actions.EventActions
+import ru.ifkbhit.ppo.common.provider.Provider
 import ru.ifkbhit.ppo.manager.StatManager
-import ru.ifkbhit.ppo.model.event.{EventType, Interval}
-import ru.ifkbhit.ppo.model.stat.{DayVisitReport, PerDayReportQuery, VisitReport}
+import ru.ifkbhit.ppo.manager.stat.UserStatStorage
+import ru.ifkbhit.ppo.model.event.{ClosedInterval, FromInterval}
+import ru.ifkbhit.ppo.model.stat.{PerDayReportQuery, StatQuery, StatReport, VisitReport}
+import ru.ifkbhit.ppo.util.TimeProvider
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class StatManagerImpl(database: Connection, eventActions: EventActions)(implicit ec: ExecutionContext) extends StatManager {
-  override def getPerDayPasses(perDayReportQuery: PerDayReportQuery): Future[VisitReport] = {
-    eventActions.find(
-      EventActions.GetEvents(
-        aggregateId = Some(perDayReportQuery.userId),
-        eventTypes = Some(Seq(EventType.UserEntered))
-      )
-    ).transactional(database)
-      .map {
-        _.groupBy(_.eventTime.withTimeAtStartOfDay())
-          .values
-          .flatMap(DayVisitReport.build)
-      }
-      .map(VisitReport.build)
-  }
+class StatManagerImpl(statStorageProvider: Provider[UserStatStorage])(implicit ec: ExecutionContext, timeProvider: TimeProvider) extends StatManager {
 
-  override def getStat(userId: Long, interval: Interval): Future[Unit] = ???
+  override def getPerDayPasses(perDayReportQuery: PerDayReportQuery): Future[VisitReport] =
+    Future {
+      statStorageProvider.get
+        .getPerDayStat(perDayReportQuery.userId)
+    }
+
+  override def getStat(query: StatQuery): Future[StatReport] = Future {
+    val (from, to) = query.interval match {
+      case FromInterval(from) =>
+        (from, timeProvider.now())
+      case ClosedInterval(from, to) =>
+        (from, to)
+      case _ =>
+        throw new RuntimeException("From is not specified")
+    }
+
+    statStorageProvider.get
+      .getStat(query.userId, query.frequency, from, to)
+  }
 }

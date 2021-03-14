@@ -4,11 +4,11 @@ import java.sql.Connection
 
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import ru.ifkbhit.ppo.actions.ManagerActions.UserNotFound
 import ru.ifkbhit.ppo.actions.{DefaultManagerActions, ManagerActions}
 import ru.ifkbhit.ppo.manager.GateManager._
 import ru.ifkbhit.ppo.manager.ManagersManager
 import ru.ifkbhit.ppo.manager.impl.{GateManagerImpl, ManagersManagerImpl}
+import ru.ifkbhit.ppo.model.exception.UserNotFound
 import ru.ifkbhit.ppo.model.gate.{UserEnterCommand, UserExitCommand}
 import ru.ifkbhit.ppo.model.manager.{RenewPassCommand, UserPayload}
 import ru.ifkbhit.ppo.utils.BaseManagerSpec

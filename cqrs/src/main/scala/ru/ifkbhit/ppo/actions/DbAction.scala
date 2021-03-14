@@ -16,6 +16,9 @@ case class DbAction[T](f: Connection => T) {
   def transactional(connection: Connection)(implicit ex: ExecutionContext): Future[T] =
     connection.transactional(f)
 
+  def transactionalBlocked(connection: Connection): T =
+    connection.transactionalBlocked(f)
+
   def map[R](mapper: T => R): DbAction[R] = DbAction { conn =>
     mapper(f(conn))
   }

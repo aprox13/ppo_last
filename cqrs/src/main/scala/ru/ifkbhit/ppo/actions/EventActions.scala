@@ -3,10 +3,10 @@ package ru.ifkbhit.ppo.actions
 import java.sql.{Connection, PreparedStatement, Statement}
 
 import ru.ifkbhit.ppo.actions.EventActions.GetEvents
-import ru.ifkbhit.ppo.actions.Filter.{SqlFilter, eventTypeInFilter, longFilter}
+import ru.ifkbhit.ppo.actions.Filter.{SqlFilter, eventTypeInFilter, intervalFilter, longFilter}
 import ru.ifkbhit.ppo.common.Logging
 import ru.ifkbhit.ppo.common.utils.MapOps._
-import ru.ifkbhit.ppo.model.event.{Event, EventType, Interval}
+import ru.ifkbhit.ppo.model.event.{Event, EventType, Interval, OpenInterval}
 import ru.ifkbhit.ppo.util.DateTimeUtils.DateTimeOps
 import ru.ifkbhit.ppo.util.SqlUtils.parseResultSet
 import ru.ifkbhit.ppo.util.TimeProvider
@@ -50,7 +50,7 @@ object EventActions {
     eventId: Option[Long],
     eventTypes: Option[Seq[EventType]],
     aggregateId: Option[Long],
-    eventTime: Interval = Interval.Open,
+    eventTime: Interval = OpenInterval,
     timeSorting: Option[Sorting],
     limit: Option[Int]
   ) extends Logging {
@@ -59,28 +59,13 @@ object EventActions {
       val aggregateIdFilter: Option[SqlFilter] = aggregateId.map(longFilter("aggregate_id"))
 
       val eventIdFilter = eventId.map(longFilter("event_id"))
-      val eventTimeFrom = eventTime.from
-        .map { dt =>
-          SqlFilter(
-            "event_time >= ?",
-            Seq(_.setString(_, dt.asPsqlTimestamp))
-          )
-        }
-
-      val eventTimeTo = eventTime.to
-        .map { dt =>
-          SqlFilter(
-            "event_time <= ?",
-            Seq(_.setString(_, dt.asPsqlTimestamp))
-          )
-        }
+      val eventTimeFilter = intervalFilter(eventTime)
 
       val filters: Seq[SqlFilter] = Seq(
         eventIdFilter,
         aggregateIdFilter,
         eventsFilter,
-        eventTimeFrom,
-        eventTimeTo
+        eventTimeFilter
       ).flatten
       val filtersSql = filters.map(_.sql).mkString(" and ")
         .applyTransformIfPred(_.nonEmpty) {
@@ -125,7 +110,7 @@ object EventActions {
       eventId: Option[Long] = None,
       eventTypes: Option[Seq[EventType]] = None,
       aggregateId: Option[Long] = None,
-      eventTime: Interval = Interval.Open,
+      eventTime: Interval = OpenInterval,
       timeSorting: Option[Sorting] = None,
       limit: Option[Int] = None
     ): GetEvents =

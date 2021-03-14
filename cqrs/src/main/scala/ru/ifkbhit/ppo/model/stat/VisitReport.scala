@@ -5,13 +5,13 @@ import spray.json._
 
 case class VisitReport(
   total: Int,
-  perDays: Seq[DayVisitReport]
+  perDays: Seq[DayVisitsReport]
 )
 
 object VisitReport {
   implicit val format: RootJsonFormat[VisitReport] = jsonFormat2(VisitReport.apply)
 
-  def build(perDays: Iterable[DayVisitReport]): VisitReport = {
+  def build(perDays: Iterable[DayVisitsReport]): VisitReport = {
     VisitReport(
       perDays.foldLeft(0)(_ + _.count),
       perDays.toSeq

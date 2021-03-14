@@ -31,7 +31,7 @@ class MemoryEventActions(database: AtomicReference[ArrayBuffer[Event]])(implicit
     newId
   }
 
-  override protected def find(request: EventActions.GetEvents): DbAction[Seq[Event]] =
+  override def find(request: EventActions.GetEvents): DbAction[Seq[Event]] =
 
     DbAction.success {
       database.get()

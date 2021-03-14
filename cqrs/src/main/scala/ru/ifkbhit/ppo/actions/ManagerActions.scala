@@ -1,7 +1,7 @@
 package ru.ifkbhit.ppo.actions
 
-import ru.ifkbhit.ppo.actions.ManagerActions.UserNotFound
 import ru.ifkbhit.ppo.model.event.EventType
+import ru.ifkbhit.ppo.model.exception.UserNotFound
 import ru.ifkbhit.ppo.model.manager.{RenewPassPayload, UserPayload, UserResult}
 import ru.ifkbhit.ppo.util.TimeProvider
 
@@ -15,7 +15,6 @@ trait ManagerActions {
 
 object ManagerActions {
 
-  case class UserNotFound(id: Long) extends RuntimeException(s"User not found: id=$id")
 }
 
 class DefaultManagerActions(eventActions: EventActions)(implicit timeProvider: TimeProvider) extends ManagerActions {

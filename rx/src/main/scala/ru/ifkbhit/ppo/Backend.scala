@@ -1,21 +1,22 @@
 package ru.ifkbhit.ppo
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{Executors, ScheduledExecutorService}
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.mongodb.rx.client.MongoClients
 import org.apache.http.impl.client.HttpClients
+import ru.ifkbhit.ppo.common.provider.{CachedProvider, Provider}
 import ru.ifkbhit.ppo.config.AppConfig
-import ru.ifkbhit.ppo.model.{StoredProduct, User}
+import ru.ifkbhit.ppo.model.{Currency, StoredProduct, User}
 import ru.ifkbhit.ppo.service._
-import ru.ifkbhit.ppo.service.currency.CurrencyService
-import ru.ifkbhit.ppo.service.impl.currency.{CachedCurrencyService, LiveCurrencyService}
+import ru.ifkbhit.ppo.service.currency.{Conversion, CurrencyService}
+import ru.ifkbhit.ppo.service.impl.currency.{ConversionProvider, LiveCurrencyService}
 import ru.ifkbhit.ppo.service.impl.{MongoDbService, ProductServiceImpl, UserServiceImpl, UtilServiceImpl}
 import rx.lang.scala.Scheduler
 import rx.lang.scala.schedulers.ExecutionContextScheduler
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 case class Backend(
   scheduler: Scheduler,
@@ -47,10 +48,23 @@ object BackendBuilder {
     val productDb: DbService[StoredProduct] =
       new MongoDbService[StoredProduct](mongoDb, appConfig.mongoCollections.product)
 
-    val currencyService: CurrencyService =
-      new LiveCurrencyService(appConfig.currenciesConfig.apiUrl, HttpClients.createDefault()) with CachedCurrencyService {
-        override protected def updateEvery: FiniteDuration = appConfig.currenciesConfig.updateEvery
+    val conversionsScheduler =
+      Executors.newScheduledThreadPool(1)
+
+    val conversionMapProvider: Provider[Map[Currency, Conversion]] =
+      new ConversionProvider(appConfig.currenciesConfig.apiUrl, HttpClients.createDefault())
+        with CachedProvider[Map[Currency, Conversion]] {
+
+        override protected def scheduler: ScheduledExecutorService =
+          conversionsScheduler
+
+        override protected def refreshDelay: FiniteDuration =
+          5.minutes
       }
+
+
+    val currencyService: CurrencyService =
+      new LiveCurrencyService(conversionMapProvider)
 
     val productService: ProductService =
       new ProductServiceImpl(currencyService, productDb, userService)

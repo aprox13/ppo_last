@@ -2,12 +2,12 @@ package ru.ifkbhit.ppo.managers
 
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import ru.ifkbhit.ppo.actions.ManagerActions.UserNotFound
 import ru.ifkbhit.ppo.actions.{DefaultManagerActions, ManagerActions}
 import ru.ifkbhit.ppo.common.model.response.ResponseMatcher
 import ru.ifkbhit.ppo.manager.ManagersManager
 import ru.ifkbhit.ppo.manager.impl.ManagersManagerImpl
 import ru.ifkbhit.ppo.model.event.{Event, EventType}
+import ru.ifkbhit.ppo.model.exception.UserNotFound
 import ru.ifkbhit.ppo.model.manager.{GetUserCommand, RenewPassCommand, UserPayload, UserResult}
 import ru.ifkbhit.ppo.utils.BaseManagerSpec
 import spray.json.enrichAny

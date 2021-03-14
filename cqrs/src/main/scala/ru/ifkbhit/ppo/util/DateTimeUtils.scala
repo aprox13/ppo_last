@@ -37,4 +37,8 @@ object DateTimeUtils {
       org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(dt)
   }
 
+  implicit object DateTimeOrdering extends Ordering[DateTime] {
+    override def compare(x: DateTime, y: DateTime): Int = x.compareTo(y)
+  }
+
 }
