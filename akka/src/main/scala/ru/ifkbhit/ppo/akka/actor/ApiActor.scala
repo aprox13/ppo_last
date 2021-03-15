@@ -2,87 +2,88 @@ package ru.ifkbhit.ppo.akka.actor
 
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.{ActorRef, Cancellable, Props}
+import akka.actor.{Props, ReceiveTimeout}
+import ru.ifkbhit.ppo.akka.manager.ApiManager.ApiResponse
 import ru.ifkbhit.ppo.akka.manager.SearchManager
-import ru.ifkbhit.ppo.akka.model.{ApiResponse, SearchResponse}
 import ru.ifkbhit.ppo.common.Logging
 import ru.ifkbhit.ppo.common.model.response.Response
 import ru.ifkbhit.ppo.common.utils.AtomicRefOps._
 
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Promise}
+import scala.util.Try
 
-class ApiActor(searchManager: SearchManager, collectingTimeout: FiniteDuration) extends BaseActor {
+class ApiActor(
+  searchManager: SearchManager,
+  collectingTimeout: FiniteDuration,
+  promise: Promise[ApiResponse]
+)(implicit ec: ExecutionContext) extends BaseActor {
 
   import ApiActor._
 
   private val apiContext: AtomicReference[ApiContext] = new AtomicReference[ApiContext]()
-  private val scheduleTimeout: AtomicReference[Cancellable] = new AtomicReference[Cancellable]()
+
+  private def updateContext(engine: String, response: Response): Unit =
+    apiContext.foreach { ctx =>
+      apiContext.set(ctx.update(engine, response))
+    }
+
+  private def reply(): Unit =
+    if (!promise.isCompleted)
+      promise.complete(
+        Try(apiContext.opt.map(_.result).getOrElse(throw new RuntimeException("No replies found")))
+      )
 
   override protected def process: Receive = {
     case ApiRequestMessage(request) =>
+      this.apiContext.set(ApiContext.empty)
 
-      val apiContext = searchManager.engines
-        .foldLeft(ApiContext.empty(sender())) {
-          case (apiCtx, engine) =>
-            val child = context.actorOf(Props(classOf[SearchActor], searchManager), s"engine-$engine")
+      searchManager.engines
+        .foreach(updateContext(_, SearcherTimeoutResponse))
 
-            child ! SearchActor.SearchRequestMessage(request, engine)
-            log.info(s"Sent request to $engine")
+      searchManager.engines
+        .foreach { engine =>
+          val child = context.actorOf(Props(classOf[SearchActor], searchManager, ec), s"engine-$engine")
 
-            apiCtx.update(engine, TimeoutResponse)
+          child ! SearchActor.SearchRequestMessage(request, engine)
+          log.info(s"Sent request to $engine")
         }
 
-      this.apiContext.set(apiContext.copy(processed = 0))
-
-      scheduleTimeout.set(
-        scheduleTimeout(collectingTimeout)(context.system.dispatcher)
-      )
-    case SearchActor.SearchResponseMessage(response, engine)
-      if apiContext.exists(_.requestsLeft == 1) =>
-      apiContext.foreach(_.update(engine, response).replyToMainSender())
-      releaseTimeout()
-      self ! BaseActor.StopActor
-
+      context.setReceiveTimeout(collectingTimeout)
 
     case SearchActor.SearchResponseMessage(response, engine) =>
-      apiContext.opt.map(_.update(engine, response))
-        .foreach(apiContext.set)
+      updateContext(engine, response)
 
-    case BaseActor.Timeout =>
-      log.info("Timeout!")
-      apiContext.foreach(_.replyToMainSender())
+      if (apiContext.exists(_.isFull)) {
+        reply()
+        self ! BaseActor.StopActor
+      }
 
-      self ! BaseActor.StopActor
-  }
+    case _: ReceiveTimeout =>
+      reply()
 
-  private def releaseTimeout(): Unit = {
-    scheduleTimeout.opt.foreach {
-      x => log.info(s"Release timeout schedule ${x.cancel()}")
-    }
   }
 }
 
 object ApiActor extends Logging {
+
   case class ApiRequestMessage(request: String)
 
-  private val TimeoutResponse: Response[SearchResponse] = Response.FailedResponse("Timeout!")
+  val SearcherTimeoutResponse: Response = Response.failed("Searcher timeout")
 
-  private case class ApiContext(result: Map[String, Response[SearchResponse]], processed: Int, mainSender: ActorRef) {
+  private case class ApiContext(result: ApiResponse, processed: Int) {
 
-    def update(engine: String, response: Response[SearchResponse]): ApiContext =
+    def update(engine: String, response: Response): ApiContext =
       this.copy(
-       result = result.updated(engine, response),
-       processed = processed + 1
+        result = result.updated(engine, response),
+        processed = processed + 1
       )
 
-    def requestsLeft: Int = result.size - processed
-
-    def replyToMainSender(): Unit =
-      mainSender ! Response.SuccessfulResponse(ApiResponse(result))
+    def isFull: Boolean = result.size == processed
   }
 
   private object ApiContext {
-    def empty(sender: ActorRef): ApiContext = ApiContext(Map.empty, 0, sender)
+    def empty: ApiContext = ApiContext(Map.empty, 0)
   }
 
 }

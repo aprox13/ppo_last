@@ -242,9 +242,16 @@ class StatManagerSpec extends BaseManagerSpec {
         timer.tick(1.hour)
         exitUser
 
-        val from = timer.now().minusDays(13)
+        val from = timer.now().minusDays(13).withTimeAtStartOfDay()
 
-        stats(query(FromInterval(from), Frequency.Week)) shouldBe failureFuture(NoStatFound(1))
+        val expected = StatReport(
+          totalCount = 4, frequency = FrequencyReport(
+            per = Frequency.Week,
+            value = 2
+          ), averageSpentMinutes = 60, interval = ClosedInterval(from, from.plusDays(14))
+        )
+
+        stats(query(FromInterval(from), Frequency.Week)) shouldBe successFuture(expected)
       }
 
 

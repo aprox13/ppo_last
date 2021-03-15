@@ -1,7 +1,7 @@
 package ru.ifkbhit.ppo.common.model.response
 
 import spray.json.DefaultJsonProtocol._
-import spray.json.{JsValue, JsonFormat, RootJsonWriter}
+import spray.json.{JsValue, JsonFormat, RootJsonFormat, RootJsonWriter}
 
 import scala.reflect.ClassTag
 
@@ -27,6 +27,14 @@ object Response {
     def response: A
 
     def jsonFormat: JsonFormat[A]
+
+    override def equals(o: Any): Boolean =
+      o match {
+        case s: SuccessStub if s.response == response =>
+          true
+        case _ =>
+          false
+      }
   }
 
   // support
@@ -64,6 +72,12 @@ object Response {
           failedFormat.write(FailedResponse(x.msg))
       }
     }
+  }
+
+  object WriteOnlyJsonFormat extends RootJsonFormat[Response] {
+    override def write(obj: Response): JsValue = ResponseJsonFormat.write(obj)
+
+    override def read(json: JsValue): Response = throw new UnsupportedOperationException("format is read only")
   }
 
   implicit class ResponseOps(val response: Response) extends AnyVal {

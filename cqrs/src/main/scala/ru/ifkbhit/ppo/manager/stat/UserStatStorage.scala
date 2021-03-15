@@ -7,8 +7,6 @@ import ru.ifkbhit.ppo.manager.StatManager.NoStatFound
 import ru.ifkbhit.ppo.model.event.ClosedInterval
 import ru.ifkbhit.ppo.model.stat.{DayVisitsReport, FrequencyReport, StatReport, VisitReport}
 
-import scala.concurrent.duration.DurationLong
-
 
 class UserStatStorage(perUser: Map[Long, Seq[ClosedInterval]]) {
 
@@ -18,6 +16,8 @@ class UserStatStorage(perUser: Map[Long, Seq[ClosedInterval]]) {
       .groupBy(_.from.withTimeAtStartOfDay())
       .values
       .flatMap(DayVisitsReport.build)
+      .toSeq
+      .sortBy(_.date.getMillis)
       .applyTransform(VisitReport.build)
 
 
@@ -50,11 +50,6 @@ class UserStatStorage(perUser: Map[Long, Seq[ClosedInterval]]) {
       interval
         .applyTransform(_.copy(from = interval.from.withTimeAtStartOfDay()))
         .applyTransform(_.copy(to = interval.to.withTimeAtStartOfDay().plusDays(1)))
-
-
-    println(resultInterval.duration.toDays)
-    println(resultInterval.duration - resultInterval.duration.toDays.days)
-
 
     StatReport(
       totalCount = targetVisits.size,
