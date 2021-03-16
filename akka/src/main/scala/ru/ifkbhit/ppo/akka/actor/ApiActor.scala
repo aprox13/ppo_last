@@ -31,7 +31,7 @@ class ApiActor(
   private def reply(): Unit =
     if (!promise.isCompleted)
       promise.complete(
-        Try(apiContext.opt.map(_.result).getOrElse(throw new RuntimeException("No replies found")))
+        Try(apiContext.opt.map(_.result).getOrElse(throw new IllegalStateException("No replies found")))
       )
 
   override protected def process: Receive = {
