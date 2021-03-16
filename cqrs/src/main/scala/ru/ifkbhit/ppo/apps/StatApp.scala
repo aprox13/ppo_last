@@ -4,7 +4,7 @@ import java.util.concurrent.{Executors, ScheduledExecutorService}
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import ru.ifkbhit.ppo.actions.{DefaultEventActions, DefaultManagerActions}
+import ru.ifkbhit.ppo.actions.DefaultEventActions
 import ru.ifkbhit.ppo.common.BaseApp
 import ru.ifkbhit.ppo.common.provider.{ActorSystemProvider, CachedProvider, Provider}
 import ru.ifkbhit.ppo.common.service.ApiService
@@ -31,7 +31,6 @@ object StatApp extends BaseApp {
     val db = EventStoreConnectionProvider.get(cfg.eventStoreConfig.connectionString)
 
     val events = new DefaultEventActions
-    val managerActions = new DefaultManagerActions(events)
     val statScheduler = Executors.newScheduledThreadPool(1)
 
     val statProvider: Provider[UserStatStorage] =

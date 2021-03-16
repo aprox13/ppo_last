@@ -15,7 +15,7 @@ trait Logging {
     val res = action
     val end = System.currentTimeMillis() - start
 
-    log.info(s"Done $actionName with ${end} millis")
+    log.info(s"Done $actionName with $end millis")
 
     res
   }
