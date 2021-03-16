@@ -75,7 +75,7 @@ class ApiManagerSpec extends StubServerSpec with Matchers with MockFactory with 
         makeCall(engine1) shouldBe expected
       }
 
-      "iit respond" in {
+      "it respond" in {
         val expected = foundAnswer(engine1)
 
         makeCall(engine1) shouldBe expected
