@@ -55,7 +55,7 @@ class UserStatStorage(perUser: Map[Long, Seq[ClosedInterval]]) {
       totalCount = targetVisits.size,
       frequency = FrequencyReport(
         value =
-          resultInterval.duration.toMillis.toDouble / frequency.periodMillis.toDouble,
+          targetVisits.size / (resultInterval.duration.toMillis.toDouble / frequency.periodMillis.toDouble),
         per = frequency
       ),
       averageSpentMinutes = (spentTotalMinutes / targetVisits.size).toInt,

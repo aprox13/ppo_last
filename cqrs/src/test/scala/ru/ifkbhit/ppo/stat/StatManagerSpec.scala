@@ -254,6 +254,54 @@ class StatManagerSpec extends BaseManagerSpec {
         stats(query(FromInterval(from), Frequency.Week)) shouldBe successFuture(expected)
       }
 
+      "comes user with visits [day freq]" in {
+        createUser
+        renewPass(30)
+
+        setupNow(9, 30)
+        enterUser
+        timer.tick(1.hour)
+        exitUser
+
+        timer.tick(2.days - 1.hour)
+
+        enterUser
+        timer.tick(1.hour)
+        exitUser
+
+        timer.tick(5.days - 1.hour)
+
+        enterUser
+        timer.tick(1.hour)
+        exitUser
+
+        timer.tick(2.days - 1.hour)
+
+        enterUser
+        timer.tick(1.hour)
+        exitUser
+
+        val from = timer.now().minusDays(13).withTimeAtStartOfDay()
+
+        val expected = StatReport(
+          totalCount = 4, frequency = FrequencyReport(
+            per = Frequency.Day,
+            value = 4.toDouble / 14.toDouble
+          ), averageSpentMinutes = 60, interval = ClosedInterval(from, from.plusDays(14))
+        )
+
+        stats(query(FromInterval(from), Frequency.Day)) shouldBe successFuture(expected)
+      }
+
+      "comes user with no visits" in {
+        createUser
+        renewPass(30)
+        timer.tick(13.days)
+
+        val from = timer.now().minusDays(13).withTimeAtStartOfDay()
+
+        stats(query(FromInterval(from), Frequency.Day)) shouldBe failureFuture(NoStatFound(1))
+      }
 
     }
 
