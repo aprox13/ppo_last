@@ -13,13 +13,16 @@
         <module>common</module>
         <module>rx</module>
         <module>cqrs</module>
+        <module>stock/market</module>
+        <module>stock/stock-common</module>
+        <module>stock/stock-lk</module>
     </modules>
 
 
     <properties>
         <project.version>1.0</project.version>
         <scala.major.version>2.12</scala.major.version>
-        <scala.version>${scala.major.version}.10</scala.version>
+        <scala.version>${scala.major.version}.12</scala.version>
     </properties>
 
     <dependencies>

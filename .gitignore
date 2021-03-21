@@ -2,3 +2,5 @@
 */*.iml
 .idea
 ppo_last.iml
+*/*/*.iml
+*/*/target/*

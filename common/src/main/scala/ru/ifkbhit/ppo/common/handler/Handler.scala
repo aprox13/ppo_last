@@ -25,7 +25,6 @@ trait JsonAnsweredHandler extends Handler with SprayJsonSupport with DefaultJson
 
   protected implicit val ec: ExecutionContext
 
-
   protected def completeResponse[T: JsonFormat](f: => Future[T]): StandardRoute = {
     complete {
       val res = f

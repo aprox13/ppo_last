@@ -12,11 +12,9 @@ import ru.ifkbhit.ppo.model.exception.UserNotFound
 import ru.ifkbhit.ppo.model.gate.{UserEnterCommand, UserExitCommand}
 import ru.ifkbhit.ppo.model.manager.{RenewPassCommand, UserPayload}
 import ru.ifkbhit.ppo.utils.BaseManagerSpec
-import ru.ifkbhit.ppo.utils.BaseManagerSpec.FutureOps
 
 import scala.concurrent.duration._
 import scala.language.implicitConversions
-import scala.util.Success
 
 class GateManagerSpec extends BaseManagerSpec {
 
@@ -43,7 +41,7 @@ class GateManagerSpec extends BaseManagerSpec {
         timer.tick(1.minute)
 
         withSuccessTransaction {
-          gateManager.enter(user.id).asTry shouldBe Success("User entered")
+          gateManager.enter(user.id) shouldBe successFuture("User entered")
         }
       }
 
