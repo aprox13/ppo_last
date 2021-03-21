@@ -2,9 +2,12 @@ package ru.ifkbhit.ppo
 
 import ru.ifkbhit.ppo.backend._
 import ru.ifkbhit.ppo.common.BaseApp
+import ru.ifkbhit.ppo.common.handler.PingRoute
 import ru.ifkbhit.ppo.common.model.config.ActorSystemConfig
+import ru.ifkbhit.ppo.common.service.ApiService
 import ru.ifkbhit.ppo.config.AppConfig
 import ru.ifkbhit.ppo.database.provider.DbConfig
+import ru.ifkbhit.ppo.handler.MarketHandler
 
 object Main extends BaseApp {
 
@@ -24,14 +27,12 @@ object Main extends BaseApp {
   override def appRun(args: String*): Unit = {
     val cfg = AppConfig(currentConfig)
 
-    println(cfg)
+    val backend = new MarketBackend(cfg.actorSystemConfig, cfg.dbConfig)
 
-    //    val backend = new MarketBackend(cfg.actorSystemConfig, cfg.dbConfig)
-    //
-    //    val handler = new MarketHandler(backend.marketManager, backend.stockManager)(backend.ec)
-    //
-    //    val apiService = new ApiService(cfg.api, handler)(backend.actorSystem, backend.materializer)
-    //    apiService.bind()
+    val handler = new MarketHandler(backend.marketManager, backend.stockManager)(backend.ec) with PingRoute
+
+    val apiService = new ApiService(cfg.api, handler)(backend.actorSystem, backend.materializer)
+    apiService.bind()
   }
 
 }
