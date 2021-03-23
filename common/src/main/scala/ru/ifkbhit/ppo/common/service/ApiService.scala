@@ -20,6 +20,7 @@ class ApiService(
 ) extends Logging {
 
   def bind(): Unit = {
+    log.info(s"Started bind to $apiConfig")
     val url = apiConfig.endpoint.toUrl
     import system.dispatcher
 
@@ -49,6 +50,9 @@ class ApiService(
         }
         )
 
+      case _ =>
+        log.info(s"Couldn't start api ${apiConfig}")
+        System.exit(1)
     }
 
   }

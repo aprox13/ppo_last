@@ -4,8 +4,8 @@ import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config
 
-import scala.util.Try
 import scala.concurrent.duration._
+import scala.util.Try
 
 object ConfigOps {
 
@@ -44,6 +44,11 @@ object ConfigOps {
       val name = context.raw(args: _*)
       DurationProp.get(name).asInstanceOf[FiniteDuration]
     }
+
+    def bool(args: Any*): Boolean = {
+      val name = context.raw(args: _*)
+      BoolProp.get(name)
+    }
   }
 
 
@@ -70,6 +75,8 @@ object ConfigOps {
   ) extends Prop[A, A](getter, filter, identity)
 
   private object IntProp extends SimpleProp[Int](_.getInt(_))
+
+  private object BoolProp extends SimpleProp[Boolean](_.getBoolean(_))
 
   private object StringProp
     extends SimpleProp[String](

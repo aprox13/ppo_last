@@ -1,4 +1,4 @@
-package ru.ifkbhit.ppo
+package ru.ifkbhit.ppo.common.handler
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Directive1}

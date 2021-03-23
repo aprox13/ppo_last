@@ -1,9 +1,10 @@
 package ru.ifkbhit.ppo.common.model.response
 
 import spray.json.DefaultJsonProtocol._
-import spray.json.{JsValue, JsonFormat, RootJsonFormat, RootJsonWriter}
+import spray.json.{JsValue, JsonFormat, RootJsonFormat, RootJsonReader, RootJsonWriter}
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 sealed trait Response {
   def responseCode: Int
@@ -60,6 +61,17 @@ object Response {
   private def successfulResponseFormat[A](implicit f: JsonFormat[A]) = jsonFormat1(SuccessfulResponse[A])
 
 
+  class ResponseReaderFormat[T: JsonFormat] extends RootJsonReader[T] {
+    override def read(json: JsValue): T = {
+      val error = Try(failedFormat.read(json))
+        .map(_.error)
+
+      if (error.isSuccess) throw FailedResponseException(error.get)
+      else successfulResponseFormat[T].read(json).response
+    }
+  }
+
+
   implicit object ResponseJsonFormat extends RootJsonWriter[Response] {
 
     override def write(obj: Response): JsValue = {
@@ -94,5 +106,8 @@ object Response {
     }
 
   }
+
+
+  case class FailedResponseException(msg: String) extends RuntimeException(msg)
 
 }
