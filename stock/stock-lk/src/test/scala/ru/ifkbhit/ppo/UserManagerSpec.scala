@@ -1,17 +1,17 @@
 package ru.ifkbhit.ppo
 
-import org.scalacheck.Gen
 import org.scalatest.concurrent.Futures
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{Matchers, WordSpec}
+import ru.ifkbhit.ppo.components.UserTestBackend
 import ru.ifkbhit.ppo.db.PsqlTestContainerProvider
 import ru.ifkbhit.ppo.exception.UserNotFound
 import ru.ifkbhit.ppo.future.FutureMatcher
 import ru.ifkbhit.ppo.gen.GenOps._
 import ru.ifkbhit.ppo.manager.UserManager
 import ru.ifkbhit.ppo.model.Money
-import ru.ifkbhit.ppo.request.UserCreateRequest
+import ru.ifkbhit.ppo.utils.LkRequestGenerators
 import ru.ifkbhit.ppo.utils.MoneySugar._
 
 class UserManagerSpec extends WordSpec
@@ -19,12 +19,10 @@ class UserManagerSpec extends WordSpec
   with PsqlTestContainerProvider
   with FutureMatcher
   with RequestGenerators
+  with LkRequestGenerators
   with Futures {
 
   object TestBackend extends UserTestBackend(testDbConfig)
-
-
-  val UserCreateRequestGen: Gen[UserCreateRequest] = NameGen.map(UserCreateRequest(_))
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(1000, Millis))
 
@@ -46,7 +44,7 @@ class UserManagerSpec extends WordSpec
       manager.getUserInfo(result.id) shouldBe successFuture(result)
     }
 
-    "add money too balance" in {
+    "add money to balance" in {
       val request = UserCreateRequestGen.next
       val user = manager.addUser(request).futureValue
 

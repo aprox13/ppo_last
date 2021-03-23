@@ -9,7 +9,7 @@ import ru.ifkbhit.ppo.config.AppConfig
 import ru.ifkbhit.ppo.database.provider.DbConfig
 import ru.ifkbhit.ppo.handler.MarketHandler
 
-object Main extends BaseApp {
+object MarketMain extends BaseApp {
 
   class MarketBackend(
     override val actorSystemConfig: ActorSystemConfig,

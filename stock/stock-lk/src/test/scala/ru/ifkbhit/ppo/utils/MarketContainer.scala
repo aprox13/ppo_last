@@ -41,7 +41,8 @@ class MarketContainer extends GenericContainer[MarketContainer]("market:1.0")
 
 class BasicMarketContainer(apiPort: Int, dbConfig: DbConfig) extends MarketContainer {
   withLocalDbConfig(dbConfig)
-    .withEnv("STOCK_MARKET_API_PORT", apiPort.toString)
+    .withEnv("API_PORT", apiPort.toString)
+    .withEnv("API_HOST", "0.0.0.0")
     .withExposedPorts(apiPort)
     .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("market-docker")))
 

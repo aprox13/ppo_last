@@ -6,7 +6,7 @@ import spray.json._
 
 case class StockBatchRequest[T](batch: Seq[T])
 
-object StockBatchRequestFormat {
+object StockBatchRequest {
 
   implicit def format[T: JsonFormat]: RootJsonFormat[StockBatchRequest[T]] =
     jsonFormat1(new StockBatchRequest[T](_))

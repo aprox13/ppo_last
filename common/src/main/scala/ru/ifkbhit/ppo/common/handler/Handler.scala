@@ -18,7 +18,7 @@ trait PingRoute extends Handler {
     complete("pong")
   }
 
-  abstract override def route: Route = super.route ~ pingRoute
+  abstract override def route: Route = pingRoute ~ super.route
 }
 
 trait JsonAnsweredHandler extends Handler with SprayJsonSupport with DefaultJsonProtocol {

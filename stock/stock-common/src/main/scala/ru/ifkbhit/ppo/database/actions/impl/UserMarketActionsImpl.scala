@@ -15,13 +15,13 @@ class UserMarketActionsImpl(userActions: UserActions)(implicit ec: ExecutionCont
     val joined =
       for {
         (stock, userStock) <- StockItemTable.stockTable join UserStocksTable.table on (_.id === _.stockId)
-      } yield (stock.name, stock.price, userStock.count)
+      } yield (userStock.userId, stock.name, stock.price, userStock.count)
 
     for {
       _ <- userActions.get(userId, forUpdate = false)
-      result <- joined.result
+      result <- joined.filter(_._1 === userId).result
     } yield result.map {
-      case (name, price, count) => UserStockInfo(name, count, price)
+      case (_, name, price, count) => UserStockInfo(name, count, price)
     }
   }
 }

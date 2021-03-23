@@ -31,6 +31,17 @@ object DatabaseProvider extends Logging {
         20.seconds
       )
     }
+
+    val tables = Await.result(
+      db.run(sql"SELECT tablename, tableowner FROM pg_catalog.pg_tables;".as[(String, String)]),
+      20.seconds
+    )
+
+    tables.foreach {
+      case (name, owner) =>
+        log.info(s"Found table $name owned by $owner")
+    }
+
     db
   }
 
